@@ -6,7 +6,7 @@ Hello, I am Anna, and this is my solution for the following task!
 
 ## Task Description
 
-We want to plan a hiking trip where we have several segments (or "etappen"), and we want to walk as much as necessary each day, but no more. 
+We want to plan a hiking trip where we have several segments, and we want to walk as much as necessary each day, but no more. 
 
 The task involves multiple challenges:
 - Handling the input from a file and reacting to possible errors
