@@ -19,21 +19,33 @@ The core challenge was the optimal division of the paths. I decided to use a bin
 ## Example
 
 Assuming the input file contains:
+
 6
+
 3
+
 11
+
 16
+
 5
+
 5
+
 12
+
 10
+
 
 The output will be:
 Your plan:
 
 Day 1: 11 km
+
 Day 2: 26 km
+
 Day 3: 22 km
+
 
 Maximum: 26 km
 
