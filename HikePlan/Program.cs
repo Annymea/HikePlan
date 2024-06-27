@@ -1,137 +1,77 @@
-﻿class HikingPlan
+﻿using System;
+using System.IO;
+using System.Linq;
+
+class HikingPlan
 {
-    private int days;
-    private int givenPathNumber;
-    private int[] givenPaths;
+    public int days;
+    public int givenPathNumber;
+    public int[] givenPaths;
 
     public int[] plannedPaths;
     public int maxPath;
 
-    public void GetHikingPlanFromFile(string? planFilePath)
+    public HikingPlan()
     {
-        if (planFilePath == null || planFilePath == "")
+        days = 0;
+        givenPathNumber = 0;
+        givenPaths = new int[] { 0 };
+        plannedPaths = new int[] { 0 };
+        maxPath = 0;
+    }
+}
+class Program
+{
+    static void Main()
+    {
+        string hikingPlanFilePath = GetPathFromUser();
+
+        HikingPlan hikingPlan;
+        try
+        {
+            hikingPlan = GetHikingPlanFromFile(hikingPlanFilePath);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Exception: " + e.Message);
+            return;
+        }
+
+        hikingPlan = PlanHike(hikingPlan);
+        PrintHikingPlan(hikingPlan);
+    }
+
+    static string GetPathFromUser()
+    {
+        Console.WriteLine("Give me the path of the file with your plan!");
+        string hikingPlanFilePath = Console.ReadLine();
+
+        int retry = 3;
+
+        while (retry > 0)
+        {
+            if (string.IsNullOrEmpty(hikingPlanFilePath))
+            {
+                Console.WriteLine("Try again! You can do it!");
+                hikingPlanFilePath = Console.ReadLine();
+                retry--;
+            }
+            else
+            {
+                retry = -1;
+            }
+        }
+
+        if (retry == 0)
         {
             Console.WriteLine("You betrayed me! I haven´t recieved any file path! :(");
-            return;
-        }
-        StreamReader sr = new StreamReader(planFilePath);
-
-        if (!int.TryParse(sr.ReadLine(), out this.givenPathNumber) || this.givenPathNumber == 0)
-        {
-            throw new Exception("Something is wrong in your file. Path number is missing or zero. o.O");
+            return "";
         }
 
-        if (!int.TryParse(sr.ReadLine(), out this.days) || this.days == 0)
-        {
-            throw new Exception("Something is wrong in your file. Days are missing or zero. o.O");
-        }
-
-        int[] tempPaths = new int[this.givenPathNumber];
-        for (int i = 0; i < this.givenPathNumber; i++)
-        {
-            if (!int.TryParse(sr.ReadLine(), out tempPaths[i]) || tempPaths[i] == 0)
-            {
-                throw new Exception($"Something is wrong in your file. Path {i + 1} is missing or zero. o.O");
-            }
-        }
-
-        this.givenPaths = tempPaths;
-
-        return;
+        return hikingPlanFilePath;
     }
 
-    public void PrintHikingPlan()
-    {
-        if (this.plannedPaths == null || this.plannedPaths.Length < 1)
-        {
-            Console.WriteLine("No hiking planned yet!");
-            return;
-        }
-
-        Console.WriteLine("\nYour plan:\n");
-
-        for (int i = 0; i < this.days; i++)
-        {
-            Console.WriteLine($"Day {i + 1}: {this.plannedPaths[i]} km");
-        }
-
-        Console.WriteLine($"\nMaximum: {this.maxPath} km");
-    }
-
-    public void PlanHike()
-    {
-        if (days == 1)
-        {
-            this.plannedPaths = [givenPaths.Sum()];
-            this.maxPath = this.plannedPaths[0];
-            return;
-        }
-
-        if (days == this.givenPaths.Length)
-        {
-            this.plannedPaths = this.givenPaths;
-            this.maxPath = this.plannedPaths.Max();
-            return;
-        }
-
-        if (this.days > this.givenPathNumber)
-        {
-            Console.WriteLine("I think you have to bring a tent. You have not planned enough stops for your trip!");
-            return;
-        }
-
-        int maxPathLength = findOptimalMaxPathLength();
-        this.fillHikePlan(maxPathLength);
-    }
-
-    private int findOptimalMaxPathLength()
-    {
-        int maxSinglePathLength = givenPaths.Max();
-        int totalPathLength = givenPaths.Sum();
-        int optimalMaxPathLength = 0;
-
-        while (maxSinglePathLength <= totalPathLength)
-        {
-            int midPathLength = (maxSinglePathLength + totalPathLength) / 2;
-
-            if (this.canPlanBeSplit(this.givenPaths, this.days, midPathLength))
-            {
-                optimalMaxPathLength = midPathLength;
-                totalPathLength = midPathLength - 1;
-            }
-            else
-            {
-                maxSinglePathLength = midPathLength + 1;
-            }
-        }
-
-        return optimalMaxPathLength;
-    }
-
-    private void fillHikePlan(int optimalMaxPathLength)
-    {
-        this.maxPath = optimalMaxPathLength;
-        this.plannedPaths = new int[this.days];
-        int currentPathSum = 0;
-        int dayIndex = 0;
-
-        for (int i = 0; i < this.givenPathNumber; i++)
-        {
-            if (currentPathSum + this.givenPaths[i] > optimalMaxPathLength)
-            {
-                this.plannedPaths[dayIndex++] = currentPathSum;
-                currentPathSum = this.givenPaths[i];
-            }
-            else
-            {
-                currentPathSum += this.givenPaths[i];
-            }
-        }
-
-        this.plannedPaths[dayIndex] = currentPathSum;
-    }
-
-    private bool canPlanBeSplit(int[] givenPlan, int numberOfDays, int maxPathLengthPerDay)
+    static bool CanPlanBeSplit(int[] givenPlan, int numberOfDays, int maxPathLengthPerDay)
     {
         int requiredDays = 1;
         int currentPathSum = 0;
@@ -151,27 +91,136 @@
 
         return requiredDays <= numberOfDays;
     }
-}
 
-class HikingPath
-{
-    static void Main()
+    static HikingPlan FillHikePlan(int optimalMaxPathLength, HikingPlan hikingPlan)
     {
-        Console.WriteLine("Give me the path of the file with your plan!");
-        string? hikingPlanFilePath = Console.ReadLine();
+        hikingPlan.maxPath = optimalMaxPathLength;
+        hikingPlan.plannedPaths = new int[] { hikingPlan.days };
+        int currentPathSum = 0;
+        int dayIndex = 0;
 
-        HikingPlan hikingPlan = new HikingPlan();
-        try
+        for (int i = 0; i < hikingPlan.givenPathNumber; i++)
         {
-            hikingPlan.GetHikingPlanFromFile(hikingPlanFilePath);
+            if (currentPathSum + hikingPlan.givenPaths[i] > optimalMaxPathLength)
+            {
+                hikingPlan.plannedPaths[dayIndex++] = currentPathSum;
+                currentPathSum = hikingPlan.givenPaths[i];
+            }
+            else
+            {
+                currentPathSum += hikingPlan.givenPaths[i];
+            }
         }
-        catch (Exception e)
+
+        hikingPlan.plannedPaths[dayIndex] = currentPathSum;
+        return hikingPlan;
+    }
+
+    static int FindOptimalMaxPathLength(HikingPlan hikePlan)
+    {
+        int maxSinglePathLength = hikePlan.givenPaths.Max();
+        int totalPathLength = hikePlan.givenPaths.Sum();
+        int optimalMaxPathLength = 0;
+
+        while (maxSinglePathLength <= totalPathLength)
         {
-            Console.WriteLine("Exception: " + e.Message);
+            int midPathLength = (maxSinglePathLength + totalPathLength) / 2;
+
+            if (CanPlanBeSplit(hikePlan.givenPaths, hikePlan.days, midPathLength))
+            {
+                optimalMaxPathLength = midPathLength;
+                totalPathLength = midPathLength - 1;
+            }
+            else
+            {
+                maxSinglePathLength = midPathLength + 1;
+            }
+        }
+
+        return optimalMaxPathLength;
+    }
+
+    static HikingPlan GetHikingPlanFromFile(string planFilePath)
+    {
+        HikingPlan hikingPlan = new HikingPlan();
+
+        if (string.IsNullOrEmpty(planFilePath))
+        {
+            throw new Exception("You betrayed me! I haven’t received any file path! :(");
+        }
+
+        using (StreamReader sr = new StreamReader(planFilePath))
+        {
+
+            if (!int.TryParse(sr.ReadLine(), out hikingPlan.givenPathNumber) || hikingPlan.givenPathNumber == 0)
+            {
+                throw new Exception("Something is wrong in your file. Path number is missing or zero.");
+            }
+
+            if (!int.TryParse(sr.ReadLine(), out hikingPlan.days) || hikingPlan.days == 0)
+            {
+                throw new Exception("Something is wrong in your file. Days are missing or zero.");
+            }
+
+            int[] tempPaths = new int[hikingPlan.givenPathNumber];
+            for (int i = 0; i < hikingPlan.givenPathNumber; i++)
+            {
+                if (!int.TryParse(sr.ReadLine(), out tempPaths[i]) || tempPaths[i] == 0)
+                {
+                    throw new Exception($"Something is wrong in your file. Path {i + 1} is missing or zero.");
+                }
+            }
+
+            hikingPlan.givenPaths = tempPaths;
+        }
+
+        return hikingPlan;
+    }
+
+    static void PrintHikingPlan(HikingPlan hikingPlan)
+    {
+        if (hikingPlan.plannedPaths == null || hikingPlan.plannedPaths.Length < 1)
+        {
+            Console.WriteLine("No hiking planned yet!");
             return;
         }
 
-        hikingPlan.PlanHike();
-        hikingPlan.PrintHikingPlan();
+        Console.WriteLine("\nYour plan:\n");
+
+        for (int i = 0; i < hikingPlan.days; i++)
+        {
+            Console.WriteLine($"Day {i + 1}: {hikingPlan.plannedPaths[i]} km");
+        }
+
+        Console.WriteLine($"\nMaximum: {hikingPlan.maxPath} km");
+    }
+
+    static HikingPlan PlanHike(HikingPlan hikePlan)
+    {
+        if (hikePlan.days == 1)
+        {
+            hikePlan.plannedPaths = new int[] { hikePlan.givenPaths.Sum() };
+            hikePlan.maxPath = hikePlan.plannedPaths[0];
+            return hikePlan;
+        }
+
+        if (hikePlan.days == hikePlan.givenPaths.Length)
+        {
+            hikePlan.plannedPaths = hikePlan.givenPaths;
+            hikePlan.maxPath = hikePlan.plannedPaths.Max();
+            return hikePlan;
+        }
+
+        if (hikePlan.days > hikePlan.givenPathNumber)
+        {
+            Console.WriteLine("I think you have to bring a tent. You have not planned enough stops for your trip!");
+            return hikePlan;
+        }
+
+        int maxPathLength = FindOptimalMaxPathLength(hikePlan);
+        hikePlan = FillHikePlan(maxPathLength, hikePlan);
+
+        return hikePlan;
     }
 }
+
