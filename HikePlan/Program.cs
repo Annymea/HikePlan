@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-class HikingPlan
+public class HikingPlan
 {
     public int days;
     public int givenPathNumber;
@@ -15,16 +15,20 @@ class HikingPlan
     {
         days = 0;
         givenPathNumber = 0;
-        givenPaths = new int[] { 0 };
-        plannedPaths = new int[] { 0 };
+        givenPaths = new int[0];
+        plannedPaths = new int[0];
         maxPath = 0;
     }
 }
-class Program
+public class OptimizeHikePath
 {
     static void Main()
     {
         string hikingPlanFilePath = GetPathFromUser();
+        if (string.IsNullOrEmpty(hikingPlanFilePath))
+        {
+            return; 
+        }
 
         HikingPlan hikingPlan;
         try
@@ -92,10 +96,21 @@ class Program
         return requiredDays <= numberOfDays;
     }
 
-    static HikingPlan FillHikePlan(int optimalMaxPathLength, HikingPlan hikingPlan)
+    public static HikingPlan FillHikePlan(int optimalMaxPathLength, HikingPlan hikingPlan)
     {
+        if (!CheckIfHikingPlanIsValid(hikingPlan))
+        {
+            Console.WriteLine("There is something wrong with the plan!");
+            return hikingPlan;
+        }
+        if(optimalMaxPathLength == 0)
+        {
+            Console.WriteLine("Canot fill the plan. Something went wrong when calculating!");
+            return hikingPlan;
+        }
+
         hikingPlan.maxPath = optimalMaxPathLength;
-        hikingPlan.plannedPaths = new int[] { hikingPlan.days };
+        hikingPlan.plannedPaths = new int[hikingPlan.days];
         int currentPathSum = 0;
         int dayIndex = 0;
 
@@ -116,8 +131,21 @@ class Program
         return hikingPlan;
     }
 
-    static int FindOptimalMaxPathLength(HikingPlan hikePlan)
+    static bool CheckIfHikingPlanIsValid(HikingPlan hikePlan)
     {
+        if(hikePlan.days == 0 || hikePlan.givenPaths.Length == 0 || hikePlan.givenPathNumber == 0)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public static int FindOptimalMaxPathLength(HikingPlan hikePlan)
+    {
+        if (!CheckIfHikingPlanIsValid(hikePlan))
+        {
+            return 0;
+        }
         int maxSinglePathLength = hikePlan.givenPaths.Max();
         int totalPathLength = hikePlan.givenPaths.Sum();
         int optimalMaxPathLength = 0;
