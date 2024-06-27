@@ -17,7 +17,7 @@ The task involves multiple challenges:
 The core challenge was the optimal division of the paths. I decided to use a binary search to find the optimal maximum length for one day's hike. This approach allows me to prepare the path array for the final planned hike efficiently.
 
 ## Needed Input
-The structure for your plan is the following:
+The program needs a filepath of you hiking plan. The structure for your plan is the following:
 - First line: number of seperate paths
 - Second Line: number of planned days
 - Remaining: paths in the correct order of your hike
